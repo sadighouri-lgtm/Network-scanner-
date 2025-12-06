@@ -1,0 +1,10 @@
+git clone https://github.com/yourusername/networkmapper
+cd networkmapper
+Install requirements:
+
+pip3 install pyfiglet
+
+
+Make sure Nmap is installed:
+
+sudo apt install nmap
