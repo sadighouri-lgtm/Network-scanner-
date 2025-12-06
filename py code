@@ -1,0 +1,114 @@
+import subprocess
+import pyfiglet
+import socket
+import sys
+
+# Banners
+print(pyfiglet.figlet_format("NETWORK MAPPER"))
+print(pyfiglet.figlet_format("BY DARK CYBER"))
+
+
+def ping_target(target):
+    print("\n[+] Pinging target...")
+    try:
+        result = subprocess.run(["ping", "-c", "4", target],
+                                capture_output=True, text=True, check=True)
+        print(result.stdout)
+    except subprocess.CalledProcessError:
+        print("[-] Ping failed. Target unreachable.")
+
+
+def traceroute_target(target):
+    print("\n[+] Running traceroute...")
+    try:
+        result = subprocess.run(["traceroute", target],
+                                capture_output=True, text=True, check=True)
+        print(result.stdout)
+    except:
+        print("[-] Traceroute failed or not installed.")
+
+
+def resolve_hostname(target):
+    print("\n[+] Resolving hostname/IP...")
+    try:
+        resolved = socket.gethostbyname(target)
+        print(f"Hostname → IP: {resolved}")
+    except:
+        print("[-] Could not resolve hostname.")
+
+
+def basic_port_scan(target):
+    print("\n[+] Checking common open ports (safe)...")
+    common_ports = {
+        21: "FTP",
+        22: "SSH",
+        23: "TELNET",
+        25: "SMTP",
+        53: "DNS",
+        80: "HTTP",
+        443: "HTTPS",
+        8080: "HTTP-ALT"
+    }
+
+    for port, service in common_ports.items():
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
+        try:
+            result = sock.connect_ex((target, port))
+            if result == 0:
+                print(f"[OPEN] Port {port} ({service})")
+        except:
+            pass
+        sock.close()
+
+
+def discover_devices():
+    print("\n[+] Discovering devices on your network (safe scan)...")
+    print("[!] This only lists devices — no OS or version scanning.\n")
+
+    network = input("Enter network (example: 192.168.1.0/24): ")
+
+    try:
+        result = subprocess.run(
+            ["nmap", "-sn", network],
+            capture_output=True,
+            text=True
+        )
+        print(result.stdout)
+    except FileNotFoundError:
+        print("[-] Nmap not installed. Install it using: sudo apt install nmap")
+
+
+def main_menu():
+    print("""
+[1] Ping Target
+[2] Traceroute Target
+[3] Resolve Hostname / IP
+[4] Basic Port Checker (Safe)
+[5] Discover Devices on Network (Safe)
+[6] Exit
+""")
+
+
+# Program starts
+target = input("Enter target IP or domain: ")
+
+while True:
+    main_menu()
+    choice = input("Select an option: ")
+
+    if choice == "1":
+        ping_target(target)
+    elif choice == "2":
+        traceroute_target(target)
+    elif choice == "3":
+        resolve_hostname(target)
+    elif choice == "4":
+        basic_port_scan(target)
+    elif choice == "5":
+        discover_devices()
+    elif choice == "6":
+        print("Exiting... Goodbye!")
+        sys.exit()
+    else:
+        print("Invalid selection!")
